@@ -1,0 +1,51 @@
+import cv2
+import mediapipe as mp
+
+mp_hands = mp.solutions.hands
+hands = mp_hands.Hands()
+mp_draw = mp.solutions.drawing_utils
+
+cap = cv2.VideoCapture(0)
+
+sentence = []
+current_word = ""
+
+while True:
+    ret, frame = cap.read()
+    frame = cv2.flip(frame,1)
+
+    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    result = hands.process(rgb)
+
+    if result.multi_hand_landmarks:
+        for hand_landmarks in result.multi_hand_landmarks:
+            mp_draw.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+
+
+            current_word = "HELLO"
+
+    
+    key = cv2.waitKey(1)
+
+    if key == 32:  
+        sentence.append(current_word)
+
+    if key == 8:  
+        if sentence:
+            sentence.pop()
+
+    if key == 27:
+        break
+
+    sentence_text = " ".join(sentence)
+
+    cv2.putText(frame, "Word: " + current_word, (10,40),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+
+    cv2.putText(frame, "Sentence: " + sentence_text, (10,80),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (255,0,0), 2)
+
+    cv2.imshow("Sign Language Sentence Builder", frame)
+
+cap.release()
+cv2.destroyAllWindows()
